@@ -1,0 +1,207 @@
+<script>
+(function () {
+  'use strict';
+  const form = document.getElementById('playerForm');
+  const photoInput = document.getElementById('playerPhoto');
+  const uploadBox = document.getElementById('uploadBox');
+  const uploadPrompt = document.getElementById('uploadPrompt');
+  const previewWrap = document.getElementById('photoPreviewWrap');
+  const preview = document.getElementById('photoPreview');
+  const submitBtn = document.getElementById('submitBtn');
+  const toast = document.getElementById('toast');
+  let photoData = null;
+  let toastTimer = null;
+
+  const requiredIds = ['playerName', 'position', 'projectName', 'jerseyNumber', 'jerseySize', 'playerPhoto', 'privacyConsent'];
+  const fieldLabels = {
+    playerName: 'Please enter your full name.',
+    position: 'Please select a playing position.',
+    projectName: 'Please enter your project name.',
+    jerseyNumber: 'Please enter a jersey number from 0 to 99.',
+    jerseySize: 'Please select your jersey size.',
+    playerPhoto: 'Please upload a clear-face photo (maximum 10 MB).',
+    privacyConsent: 'Please confirm the privacy notice.'
+  };
+
+  function showToast(message, type) {
+    toast.textContent = message;
+    toast.className = 'toast show ' + (type || '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.className = 'toast'; }, 4300);
+  }
+  function setError(id, message) {
+    const error = document.querySelector('[data-error="' + id + '"]');
+    const element = document.getElementById(id);
+    if (error) error.textContent = message || '';
+    if (element && element.classList) element.classList.toggle('invalid', Boolean(message));
+  }
+  function clearErrors() { requiredIds.forEach(id => setError(id, '')); }
+  function updateProgress() {
+    let count = 0;
+    ['playerName','position','projectName','jerseyNumber','jerseySize'].forEach(id => {
+      const el = document.getElementById(id);
+      if (String(el.value).trim() !== '') count++;
+    });
+    if (photoData) count++;
+    if (document.getElementById('privacyConsent').checked) count++;
+    const percent = Math.round(count / 7 * 100);
+    document.getElementById('progressBar').style.width = percent + '%';
+    document.getElementById('progressText').textContent = percent + '% COMPLETE';
+  }
+  requiredIds.forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener(el.type === 'checkbox' || el.tagName === 'SELECT' ? 'change' : 'input', () => {
+      setError(id, '');
+      updateProgress();
+    });
+  });
+
+  if (form) {
+  photoInput.addEventListener('change', () => {
+    setError('playerPhoto', '');
+    const file = photoInput.files && photoInput.files[0];
+    photoData = null;
+    if (!file) {
+      uploadPrompt.hidden = false; previewWrap.hidden = true; updateProgress(); return;
+    }
+    const allowed = ['image/jpeg','image/png','image/webp'];
+    if (!allowed.includes(file.type)) {
+      photoInput.value = ''; setError('playerPhoto', 'Only JPG, PNG, and WebP images are allowed.');
+      uploadPrompt.hidden = false; previewWrap.hidden = true; updateProgress(); return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      photoInput.value = ''; setError('playerPhoto', 'The photo is larger than 10 MB. Please choose a smaller image.');
+      uploadPrompt.hidden = false; previewWrap.hidden = true; updateProgress(); return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      photoData = { dataUrl: reader.result, mimeType: file.type, fileName: file.name, size: file.size };
+      preview.src = reader.result;
+      document.getElementById('photoFileName').textContent = file.name;
+      document.getElementById('photoFileSize').textContent = formatBytes(file.size);
+      uploadPrompt.hidden = true; previewWrap.hidden = false; updateProgress();
+    };
+    reader.onerror = () => { photoInput.value = ''; setError('playerPhoto', 'Could not read this image. Please try another file.'); };
+    reader.readAsDataURL(file);
+  });
+
+  function formatBytes(bytes) {
+    return bytes < 1024 * 1024 ? Math.max(1, Math.round(bytes / 1024)) + ' KB' : (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+  function validate() {
+    clearErrors();
+    let ok = true;
+    ['playerName','position','projectName','jerseyNumber','jerseySize'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!String(el.value).trim()) { setError(id, fieldLabels[id]); ok = false; }
+    });
+    const name = document.getElementById('playerName');
+    if (name.value.trim().length > 100) { setError('playerName','Name must be 100 characters or fewer.'); ok = false; }
+    const project = document.getElementById('projectName');
+    if (project.value.trim().length > 100) { setError('projectName','Project name must be 100 characters or fewer.'); ok = false; }
+    const jersey = document.getElementById('jerseyNumber');
+    const n = Number(jersey.value);
+    if (jersey.value === '' || !Number.isInteger(n) || n < 0 || n > 99) { setError('jerseyNumber',fieldLabels.jerseyNumber); ok = false; }
+    if (!photoData) { setError('playerPhoto',fieldLabels.playerPhoto); ok = false; }
+    if (!document.getElementById('privacyConsent').checked) { setError('privacyConsent',fieldLabels.privacyConsent); ok = false; }
+    if (!ok) {
+      const first = document.querySelector('.field-error:not(:empty)');
+      if (first) first.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    return ok;
+  }
+  function setSubmitting(active) {
+    submitBtn.disabled = active;
+    submitBtn.innerHTML = active ? '<span class="spinner"></span><span>SUBMITTING REGISTRATION…</span>' : '<span>SUBMIT REGISTRATION</span><span class="btn-arrow">↗</span>';
+  }
+  // The backend returns success only after the photo and sheet row are saved.
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!validate()) { showToast('Please check the highlighted fields.', 'error'); return; }
+    if (!(window.google && google.script && google.script.run)) {
+      showToast('This page is not connected to Apps Script. Open the deployed web app URL.', 'error'); return;
+    }
+    setSubmitting(true);
+    const payload = {
+      playerName: document.getElementById('playerName').value.trim(),
+      position: document.getElementById('position').value,
+      projectName: document.getElementById('projectName').value.trim(),
+      jerseyNumber: Number(document.getElementById('jerseyNumber').value),
+      jerseySize: document.getElementById('jerseySize').value,
+      privacyConsent: document.getElementById('privacyConsent').checked,
+      photo: photoData
+    };
+    google.script.run
+      .withSuccessHandler(result => {
+        setSubmitting(false);
+        if (!result || !result.success) {
+          showToast(result && result.message ? result.message : 'Registration could not be completed. Please try again.', 'error');
+          if (result && result.field) setError(result.field, result.message);
+          return;
+        }
+        form.hidden = true;
+        document.querySelector('.progress-wrap').hidden = true;
+        document.getElementById('registrationId').textContent = result.registrationId;
+        document.getElementById('successPanel').hidden = false;
+        showToast('Registration submitted successfully!', 'success');
+        document.getElementById('successPanel').scrollIntoView({behavior:'smooth',block:'center'});
+      })
+      .withFailureHandler(error => {
+        setSubmitting(false);
+        showToast(error && error.message ? error.message : 'A server error occurred. Please try again.', 'error');
+      })
+      .submitRegistration(payload);
+  });
+
+  document.getElementById('registerAnother').addEventListener('click', () => {
+    if (!confirm('Start a new player registration?')) return;
+    form.reset(); form.hidden = false; document.querySelector('.progress-wrap').hidden = false;
+    document.getElementById('successPanel').hidden = true;
+    photoData = null; uploadPrompt.hidden = false; previewWrap.hidden = true; preview.removeAttribute('src');
+    clearErrors(); updateProgress();
+    document.getElementById('register').scrollIntoView({behavior:'smooth'});
+  });
+  }
+
+  // Admin view is activated only when the template receives view=admin.
+  const adminRefresh = document.getElementById('refreshAdmin');
+  if (adminRefresh) {
+    let adminPlayers = [];
+    const adminMessage = document.getElementById('adminMessage');
+    function loadAdmin() {
+      adminMessage.textContent = 'Checking organizer authorization…';
+      document.getElementById('adminStats').hidden = true;
+      document.getElementById('adminFilters').hidden = true;
+      document.getElementById('adminTableWrap').hidden = true;
+      google.script.run.withSuccessHandler(data => {
+        if (!data || !data.success) { adminMessage.textContent = 'Unable to load registrations.'; return; }
+        adminPlayers = data.players || [];
+        adminMessage.textContent = adminPlayers.length ? 'Loaded ' + adminPlayers.length + ' registration(s).' : 'No registrations yet.';
+        const stats = document.getElementById('adminStats');
+        stats.innerHTML = '<div><small>TOTAL PLAYERS</small><strong>'+data.total+'</strong></div><div><small>PENDING</small><strong>'+data.pending+'</strong></div><div><small>APPROVED</small><strong>'+data.approved+'</strong></div><div><small>REJECTED</small><strong>'+data.rejected+'</strong></div>';
+        stats.hidden = false; document.getElementById('adminFilters').hidden = false; document.getElementById('adminTableWrap').hidden = false; renderAdmin();
+      }).withFailureHandler(err => { adminMessage.textContent = err && err.message ? err.message : 'Organizer authorization failed.'; }).getOrganizerDashboardData();
+    }
+    function renderAdmin() {
+      const q = (document.getElementById('adminSearch').value || '').toLowerCase();
+      const status = document.getElementById('adminStatusFilter').value;
+      const filtered = adminPlayers.filter(p => (!status || p.status === status) && (p.playerName.toLowerCase().includes(q) || p.registrationId.toLowerCase().includes(q)));
+      const body = document.getElementById('adminTableBody'); body.textContent = '';
+      filtered.forEach(p => {
+        const tr = document.createElement('tr');
+        [p.playerName, p.position, p.projectName, '#' + p.jerseyNumber + ' / ' + p.jerseySize].forEach(value => { const td=document.createElement('td'); td.textContent=value; tr.appendChild(td); });
+        const statusTd=document.createElement('td'); const select=document.createElement('select'); ['Pending Review','Approved','Rejected'].forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===p.status)o.selected=true;select.appendChild(o);}); select.addEventListener('change',()=>{select.disabled=true;google.script.run.withSuccessHandler(()=>{showToast('Status updated.','success');loadAdmin();}).withFailureHandler(err=>{select.disabled=false;showToast(err&&err.message?err.message:'Could not update status.','error');}).updateRegistrationStatus(p.registrationId,select.value);}); statusTd.appendChild(select); tr.appendChild(statusTd);
+        const actionTd=document.createElement('td'); const id=document.createElement('button'); id.className='admin-btn small'; id.textContent='Copy ID'; id.addEventListener('click',()=>{if(navigator.clipboard)navigator.clipboard.writeText(p.registrationId).then(()=>showToast('Registration ID copied.','success'));else showToast(p.registrationId);}); actionTd.appendChild(id); tr.appendChild(actionTd); body.appendChild(tr);
+      });
+      if (!filtered.length) { const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=6;td.textContent='No matching players.';tr.appendChild(td);body.appendChild(tr); }
+    }
+    adminRefresh.addEventListener('click', loadAdmin);
+    document.getElementById('adminSearch').addEventListener('input', renderAdmin);
+    document.getElementById('adminStatusFilter').addEventListener('change', renderAdmin);
+    document.getElementById('exportCsv').addEventListener('click',()=>google.script.run.withSuccessHandler(csv=>{const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));const a=document.createElement('a');a.href=url;a.download='buzzblu-player-registrations.csv';a.click();URL.revokeObjectURL(url);}).withFailureHandler(err=>showToast(err&&err.message?err.message:'CSV export failed.','error')).exportRegistrationsCsv());
+    loadAdmin();
+  } else {
+    updateProgress();
+  }
+})();
+</script>

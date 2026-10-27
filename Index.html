@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <?!= include('Style'); ?>
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="BuzzBlu home"><span class="brand-mark">B</span><span>BUZZ<span class="brand-blue">BLU</span><small>HUB • SPORTS</small></span></a>
+    <div class="top-tag"><span class="live-dot"></span> INTERNAL TOURNAMENT 2026</div>
+  </header>
+
+  <? if (pageMode === 'admin') { ?>
+  <main class="admin-main">
+    <section class="admin-heading"><div class="section-kicker">BUZZBLU HUB • PRIVATE</div><h1>PLAYER <span>ADMIN</span></h1><p>Organizer dashboard. Access requires an authorized Google account and supported deployment settings.</p></section>
+    <section class="admin-panel">
+      <div class="admin-toolbar"><h2>Registration Records</h2><div class="admin-actions"><button id="refreshAdmin" class="admin-btn">↻ Refresh</button><button id="exportCsv" class="admin-btn">↓ Export CSV</button></div></div>
+      <div id="adminMessage" class="admin-message">Loading secure organizer dashboard…</div>
+      <div id="adminStats" class="admin-stats" hidden></div>
+      <div class="admin-filters" id="adminFilters" hidden><input id="adminSearch" placeholder="Search player name or registration ID"><select id="adminStatusFilter"><option value="">All statuses</option><option>Pending Review</option><option>Approved</option><option>Rejected</option></select></div>
+      <div id="adminTableWrap" class="admin-table-wrap" hidden><table class="admin-table"><thead><tr><th>PLAYER</th><th>POSITION</th><th>PROJECT</th><th>JERSEY</th><th>STATUS</th><th>UPDATE</th></tr></thead><tbody id="adminTableBody"></tbody></table></div>
+    </section>
+  </main>
+<? } else { ?>
+<main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="eyebrow-line"></span> THE GAME STARTS HERE</div>
+        <h1>BUZZBLU<br><span>FOOTBALL</span><br>TOURNAMENT <em>2026</em></h1>
+        <p class="hero-sub">One team. One passion. One champion.</p>
+        <div class="event-pills"><span>⚽ Player Auction</span><span>🏆 Championship Trophy</span><span>👕 Custom Jersey</span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="ball"><svg viewBox="0 0 200 200" role="img" aria-label="Football"><defs><linearGradient id="ballShade" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#b9c9d8"/></linearGradient></defs><circle cx="100" cy="100" r="88" fill="url(#ballShade)" stroke="#d8e6f1" stroke-width="3"/><polygon points="100,62 126,81 116,111 84,111 74,81" fill="#101d2a"/><polygon points="100,17 128,27 126,52 100,62 74,52 72,27" fill="#101d2a"/><polygon points="26,61 49,43 74,52 74,81 49,98 25,84" fill="#101d2a"/><polygon points="174,61 151,43 126,52 126,81 151,98 175,84" fill="#101d2a"/><polygon points="49,98 74,81 84,111 70,137 42,133 25,111" fill="#101d2a"/><polygon points="151,98 126,81 116,111 130,137 158,133 175,111" fill="#101d2a"/><polygon points="84,111 116,111 130,137 115,165 85,165 70,137" fill="#101d2a"/></svg></div>
+        <div class="hero-stamp"><span>EST.</span><strong>2026</strong><span>BUZZBLU HUB</span></div>
+        <div class="hero-caption">PLAY WITH PRIDE <span>✦</span> PLAY AS ONE</div>
+      </div>
+    </section>
+
+    <section class="intro-panel">
+      <div class="intro-icon">✦</div>
+      <div><div class="section-kicker">A NOTE TO THE TEAM</div><h2>প্রিয় BuzzBlu টিম,</h2>
+      <p>আমরা আয়োজন করতে যাচ্ছি <strong>BuzzBlu Monthly Football Tournament 2026!</strong></p>
+      <p>এবারের আয়োজনটি শুধু একটি ফুটবল টুর্নামেন্ট নয়। পুরো ইভেন্টকে আরও আনন্দময় ও স্মরণীয় করে তুলতে থাকছে <strong>Player Auction, Customized Tournament T-Shirt, Championship Trophy, Individual Awards এবং Special Dinner &amp; Picnic Night!</strong></p>
+      <p>Buz​​zBlu-এর সবাইকে নিয়ে একটি চমৎকার ফুটবল নাইট উপভোগ করাই আমাদের মূল উদ্দেশ্য।</p></div>
+    </section>
+
+    <section class="registration-layout" id="register">
+      <aside class="form-aside">
+        <div class="section-kicker">JOIN THE SQUAD</div>
+        <h2>Your game.<br><span>Your moment.</span></h2>
+        <p>রেজিস্ট্রেশন ফর্মটি পূরণ করে টুর্নামেন্টে অংশগ্রহণের জন্য নিজের তথ্য জমা দিন।</p>
+        <div class="aside-stat"><span class="stat-icon">01</span><div><strong>PLAYER PROFILE</strong><small>আপনার সঠিক তথ্য দিন</small></div></div>
+        <div class="aside-stat"><span class="stat-icon">02</span><div><strong>POSITION &amp; JERSEY</strong><small>আপনার পছন্দ নির্বাচন করুন</small></div></div>
+        <div class="aside-stat"><span class="stat-icon">03</span><div><strong>READY TO PLAY</strong><small>সাবমিট করে নিশ্চিত করুন</small></div></div>
+        <div class="aside-foot"><span class="live-dot"></span> REGISTRATION • 2026</div>
+      </aside>
+
+      <div class="form-card">
+        <div class="form-card-head"><div><div class="section-kicker">PLAYER DETAILS</div><h2>Player Registration</h2></div><div class="form-number">FORM <strong>01</strong></div></div>
+        <div class="progress-wrap"><div class="progress-label"><span>YOUR PROFILE</span><span id="progressText">0% COMPLETE</span></div><div class="progress-track"><div id="progressBar"></div></div></div>
+
+        <form id="playerForm" novalidate>
+          <div class="field-block">
+            <label for="playerName">Player Name (Full) <span>*</span></label>
+            <input id="playerName" name="playerName" type="text" placeholder="Enter your full name" maxlength="100" required autocomplete="name">
+            <small class="field-error" data-error="playerName"></small>
+          </div>
+          <div class="field-grid">
+            <div class="field-block">
+              <label for="position">Playing Position <span>*</span></label>
+              <div class="select-wrap"><select id="position" name="position" required><option value="">Select position</option><option>Goalkeeper</option><option>Full Back</option><option>Center Back</option><option>Defensive Midfielder</option><option>Attacking Midfielder</option><option>Center Midfielder</option><option>Right Winger</option><option>Left Winger</option><option>Center Forward</option><option>Finisher</option></select></div>
+              <small class="field-error" data-error="position"></small>
+            </div>
+            <div class="field-block">
+              <label for="projectName">Project Name <span>*</span></label>
+              <input id="projectName" name="projectName" type="text" placeholder="Your project / team" maxlength="100" required>
+              <small class="field-error" data-error="projectName"></small>
+            </div>
+          </div>
+          <div class="field-grid">
+            <div class="field-block">
+              <label for="jerseyNumber">Jersey Number <span>*</span></label>
+              <input id="jerseyNumber" name="jerseyNumber" type="number" min="0" max="99" step="1" placeholder="00–99" required>
+              <small class="field-hint">Final number may depend on organizer approval.</small>
+              <small class="field-error" data-error="jerseyNumber"></small>
+            </div>
+            <div class="field-block">
+              <label for="jerseySize">Jersey Size <span>*</span></label>
+              <div class="select-wrap"><select id="jerseySize" name="jerseySize" required><option value="">Choose size</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>XXXL</option></select></div>
+              <small class="field-error" data-error="jerseySize"></small>
+            </div>
+          </div>
+          <div class="field-block">
+            <label>Picture With Clear Face <span>*</span></label>
+            <label class="upload-box" id="uploadBox" for="playerPhoto">
+              <input id="playerPhoto" name="playerPhoto" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden>
+              <div id="uploadPrompt" class="upload-prompt"><div class="upload-icon">↑</div><strong>Upload your player photo</strong><span>Click to browse or choose from your device</span><small>JPG, PNG or WebP • Maximum 10 MB</small></div>
+              <div id="photoPreviewWrap" class="photo-preview-wrap" hidden><img id="photoPreview" alt="Player photo preview"><div><strong id="photoFileName">player-photo.jpg</strong><span id="photoFileSize"></span><span class="replace-note">Click to replace photo</span></div><span class="photo-check">✓</span></div>
+            </label>
+            <small class="field-error" data-error="playerPhoto"></small>
+          </div>
+          <label class="privacy-check"><input id="privacyConsent" type="checkbox" required><span>I agree that my registration details and photo may be stored for tournament administration.</span></label>
+          <small class="field-error" data-error="privacyConsent"></small>
+          <button type="submit" class="submit-btn" id="submitBtn"><span>SUBMIT REGISTRATION</span><span class="btn-arrow">↗</span></button>
+          <p class="form-note"><span>🔒</span> Your information is submitted for tournament administration only.</p>
+        </form>
+
+        <div id="successPanel" class="success-panel" hidden aria-live="polite"><div class="success-check">✓</div><div class="section-kicker">REGISTRATION RECEIVED</div><h2>You're on the list!</h2><p>Your player registration has been submitted successfully.</p><div class="registration-id-box"><span>YOUR REGISTRATION ID</span><strong id="registrationId">BBFT-2026-XXXXXX</strong></div><p class="success-small">Keep this ID for your records. Final participation and jersey allocation are subject to organizer review.</p><button type="button" id="registerAnother" class="secondary-btn">REGISTER ANOTHER PLAYER ↗</button></div>
+      </div>
+    </section>
+
+    <section class="event-highlights"><div class="section-kicker">MORE THAN A MATCH</div><h2>Make it a night to remember.</h2><div class="highlight-grid"><div class="highlight"><span>♜</span><strong>PLAYER AUCTION</strong><small>Build your dream squad</small></div><div class="highlight"><span>🏆</span><strong>CHAMPIONSHIP</strong><small>Play for the trophy</small></div><div class="highlight"><span>✦</span><strong>INDIVIDUAL AWARDS</strong><small>Celebrate the stars</small></div><div class="highlight"><span>☼</span><strong>DINNER &amp; PICNIC</strong><small>One team, one memory</small></div></div></section>
+  </main>
+<? } ?>
+  <footer><a class="brand footer-brand" href="#"><span class="brand-mark">B</span><span>BUZZ<span class="brand-blue">BLU</span><small>HUB • SPORTS</small></span></a><p>BUZZBLU MONTHLY FOOTBALL TOURNAMENT 2026</p><span>POWERED BY BUZZBLU HUB</span></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <?!= include('Script'); ?>
+</body>
+</html>
